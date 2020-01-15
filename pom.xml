@@ -2,17 +2,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>NettyRpcDemo</groupId>
-    <artifactId>NettyRpcDemo</artifactId>
+    <groupId>com.cvshrimp</groupId>
+    <artifactId>netty-rpc</artifactId>
+	<name>netty-rpc</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>NettyRpcDemo</name>
     <url>http://maven.apache.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <!--<version>1.5.3.RELEASE</version>-->
+        <version>2.0.6.RELEASE</version>
+        <relativePath/>
+    </parent>
 
     <modules>
         <module>server</module>
@@ -29,12 +37,12 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 </project>
