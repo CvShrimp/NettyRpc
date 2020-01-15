@@ -1,11 +1,13 @@
 package com.cvshrimp.server;
 
+import com.cvshrimp.client.ZkClient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.*;
 
 import static org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import org.apache.zookeeper.data.Stat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -21,8 +23,11 @@ public class ServiceRegistry {
 
 	private static final String ZK_REGISTER_PATH = "/rpc";
 
+	@Autowired
+	private ZkClient zkClient;
+
 	public void registerService(Class<?> clazz, String data) {
-		ZooKeeper zooKeeper = ZkClient.getInstance();
+		ZooKeeper zooKeeper = zkClient.getInstance();
 		String interfaceName = clazz.getName();
 		try {
 			zooKeeper.create(ZK_REGISTER_PATH + "/" + interfaceName, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
@@ -34,7 +39,7 @@ public class ServiceRegistry {
 
 	public void registerRoot() {
 		try {
-			ZooKeeper zooKeeper = ZkClient.getInstance();
+			ZooKeeper zooKeeper = zkClient.getInstance();
 			addRootNode(zooKeeper);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,4 +1,5 @@
 server:
     port: 8081
-zk:
-    register: 127.0.0.1:2181
+registry:
+    address: 127.0.0.1
+    port: 2181

@@ -2,6 +2,11 @@ package com.cvshrimp.client;
 
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.PriorityOrdered;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -10,9 +15,14 @@ import java.util.concurrent.CountDownLatch;
  *
  * @author wkn
  */
-public class ZkClient {
+@Component
+@EnableConfigurationProperties(ZkProperties.class)
+public class ZkClient implements PriorityOrdered {
 
-	private static volatile ZooKeeper zooKeeper;
+	private volatile ZooKeeper zooKeeper;
+
+	@Autowired
+	private ZkProperties zkProperties;
 
 	private ZkClient() {}
 
@@ -20,13 +30,13 @@ public class ZkClient {
 	 * 单例
 	 * @return
 	 */
-	public static ZooKeeper getInstance() {
+	public ZooKeeper getInstance() {
 		if(zooKeeper == null) {
 			synchronized(ZooKeeper.class) {
 				if(zooKeeper == null) {
 					CountDownLatch countDownLatch = new CountDownLatch(1);
 					try {
-						zooKeeper = new ZooKeeper("127.0.0.1", 2181, event -> {
+						zooKeeper = new ZooKeeper(zkProperties.getAddress(), zkProperties.getPort(), event -> {
 							if(event.getState().equals(Watcher.Event.KeeperState.SyncConnected)) {
 								countDownLatch.countDown();
 							}
@@ -40,5 +50,10 @@ public class ZkClient {
 			}
 		}
 		return zooKeeper;
+	}
+
+	@Override
+	public int getOrder() {
+		return HIGHEST_PRECEDENCE;
 	}
 }

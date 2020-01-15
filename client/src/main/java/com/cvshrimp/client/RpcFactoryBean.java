@@ -5,6 +5,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Proxy;
 
@@ -18,8 +19,8 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
 
     private Class<T> rpcInterface;
 
-//    @Autowired
-//    RpcFactory<T> factory;
+    @Autowired
+    private ZkClient zkClient;
 
     public RpcFactoryBean() {}
 
@@ -44,7 +45,7 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
 
     @SuppressWarnings(value = "unchecked")
     private <T> T getRpc() {
-        ZooKeeper zooKeeper = ZkClient.getInstance();
+        ZooKeeper zooKeeper = zkClient.getInstance();
         StringBuilder pathBuilder = new StringBuilder("/rpc/");
         pathBuilder.append(rpcInterface.getName());
         String providerAddress;
