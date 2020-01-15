@@ -21,22 +21,23 @@ public class ServiceRegistry {
 
 	private static final String ZK_REGISTER_PATH = "/rpc";
 
-	public void register(String data) {
-		if(StringUtils.isNotEmpty(data)) {
-			CountDownLatch countDownLatch = new CountDownLatch(1);
-			try {
-				ZooKeeper zooKeeper = new ZooKeeper("127.0.0.1", 2181, event -> {
-					if(event.getState().equals(KeeperState.SyncConnected)) {
-						countDownLatch.countDown();
-					}
-				});
-				countDownLatch.await();
+	public void registerService(Class<?> clazz, String data) {
+		ZooKeeper zooKeeper = ZkClient.getInstance();
+		String interfaceName = clazz.getName();
+		try {
+			zooKeeper.create(ZK_REGISTER_PATH + "/" + interfaceName, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
+					CreateMode.EPHEMERAL);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-				addRootNode(zooKeeper);
-				createNode(zooKeeper, data);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+	public void registerRoot() {
+		try {
+			ZooKeeper zooKeeper = ZkClient.getInstance();
+			addRootNode(zooKeeper);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

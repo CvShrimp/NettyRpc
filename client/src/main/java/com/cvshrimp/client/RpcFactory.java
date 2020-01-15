@@ -23,6 +23,11 @@ public class RpcFactory<T> implements InvocationHandler {
         this.client = new RpcClient(address, port);
     }
 
+    public RpcFactory(Class<T> clazz, RpcClient client) {
+        this.clazz = clazz;
+        this.client = client;
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         return client.sendCommand(clazz, method, args);

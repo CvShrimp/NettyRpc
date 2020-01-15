@@ -3,3 +3,5 @@ spring:
       admin: admin-server
 server:
     port: 8769
+export:
+    port: 6688

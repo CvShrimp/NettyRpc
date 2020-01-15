@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,8 @@ import java.util.Map;
 @Component
 public class NettyServer implements ApplicationContextAware, InitializingBean {
 
-    private static int port = 6666;
+    @Value("${export.port}")
+    private int port;
 
     private Map<String, Object> serviceMap = Maps.newHashMap();
 
@@ -48,17 +50,18 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(RpcService.class);
+        serviceRegistry.registerRoot();
         for(Object serviceBean : serviceBeanMap.values()) {
             Class<?> clazz = serviceBean.getClass();
             Class<?>[] interfaces = clazz.getInterfaces();
             for(Class<?> inter : interfaces) {
                 String interfaceName = inter.getName();
-                // 注册服务
-                log.info("Register service : {}", interfaceName);
                 serviceMap.put(interfaceName, serviceBean);
+                serviceRegistry.registerService(inter, "127.0.0.1:" + port);
+                // 注册服务成功
+                log.info("Register service successful: {}", interfaceName);
             }
         }
-        serviceRegistry.register("127.0.0.1:" + port);
     }
 
     @Override

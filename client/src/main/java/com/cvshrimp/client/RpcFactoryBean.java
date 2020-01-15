@@ -1,5 +1,9 @@
 package com.cvshrimp.client;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.Proxy;
@@ -9,6 +13,7 @@ import java.lang.reflect.Proxy;
  *
  * @author wkn
  */
+@Slf4j
 public class RpcFactoryBean<T> implements FactoryBean<T> {
 
     private Class<T> rpcInterface;
@@ -37,7 +42,21 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
         return true;
     }
 
-    public <T> T getRpc() {
-        return (T) Proxy.newProxyInstance(rpcInterface.getClassLoader(), new Class[] { rpcInterface }, new RpcFactory<>(rpcInterface));
+    @SuppressWarnings(value = "unchecked")
+    private <T> T getRpc() {
+        ZooKeeper zooKeeper = ZkClient.getInstance();
+        StringBuilder pathBuilder = new StringBuilder("/rpc/");
+        pathBuilder.append(rpcInterface.getName());
+        String providerAddress;
+        try {
+            providerAddress = new String(zooKeeper.getData(pathBuilder.toString(), true, new Stat()));
+            String[] infoArray = providerAddress.split(":");
+            RpcClient rpcClient = new RpcClient(infoArray[0], Integer.valueOf(infoArray[1]));
+            return (T) Proxy.newProxyInstance(rpcInterface.getClassLoader(), new Class[] { rpcInterface },
+                    new RpcFactory<>(rpcInterface, rpcClient));
+        } catch (Exception e) {
+            log.error("No provider, interface={}", rpcInterface.getName());
+        }
+        return null;
     }
 }
