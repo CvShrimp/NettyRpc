@@ -8,6 +8,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Proxy;
+import java.util.List;
 
 /**
  * Created by CvShrimp on 2019/11/4.
@@ -21,6 +22,9 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
 
     @Autowired
     private ZkClient zkClient;
+
+    @Autowired
+    private LoadBalanceAddress loadBalanceAddress;
 
     public RpcFactoryBean() {}
 
@@ -48,11 +52,12 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
         ZooKeeper zooKeeper = zkClient.getInstance();
         StringBuilder pathBuilder = new StringBuilder("/rpc/");
         pathBuilder.append(rpcInterface.getName());
-        String providerAddress;
+        pathBuilder.append("/providers");
+        List<String> providerAddresses;
         try {
-            providerAddress = new String(zooKeeper.getData(pathBuilder.toString(), true, new Stat()));
-            String[] infoArray = providerAddress.split(":");
-            RpcClient rpcClient = new RpcClient(infoArray[0], Integer.valueOf(infoArray[1]));
+            providerAddresses = zooKeeper.getChildren(pathBuilder.toString(), true);
+            loadBalanceAddress.loadBalance(providerAddresses);
+            RpcClient rpcClient = new RpcClient(loadBalanceAddress.getHost(), loadBalanceAddress.getPort());
             return (T) Proxy.newProxyInstance(rpcInterface.getClassLoader(), new Class[] { rpcInterface },
                     new RpcFactory<>(rpcInterface, rpcClient));
         } catch (Exception e) {

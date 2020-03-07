@@ -30,8 +30,9 @@ public class ServiceRegistry {
 		ZooKeeper zooKeeper = zkClient.getInstance();
 		String interfaceName = clazz.getName();
 		try {
-			zooKeeper.create(ZK_REGISTER_PATH + "/" + interfaceName, data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,
-					CreateMode.EPHEMERAL);
+			createIfNotExisted(zooKeeper, ZK_REGISTER_PATH + "/" + interfaceName, null);
+			createIfNotExisted(zooKeeper, ZK_REGISTER_PATH + "/" + interfaceName + "/providers", null);
+			createIfNotExisted(zooKeeper, ZK_REGISTER_PATH + "/" + interfaceName + "/providers/" + data, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,12 +62,14 @@ public class ServiceRegistry {
 		}
 	}
 
-	private void createNode(ZooKeeper zooKeeper, String data) {
+	private void createIfNotExisted(ZooKeeper zooKeeper, String path, String data) {
 		try {
-			zooKeeper.create(ZK_REGISTER_PATH + "/provider", data.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE,CreateMode.EPHEMERAL);
-		} catch (KeeperException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+			Stat stat = zooKeeper.exists(path, false);
+			// 不是null,则说明存在
+			if(stat == null) {
+				zooKeeper.create(path, data != null ? data.getBytes() : null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
