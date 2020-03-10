@@ -1,9 +1,10 @@
 package com.cvshrimp.client;
 
+import com.cvshrimp.spi.ExtensionLoader;
+import com.cvshrimp.spi.api.ILoadBalance;
+import com.cvshrimp.spi.impl.LoadBalanceAddress;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.data.Stat;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,9 +23,6 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
 
     @Autowired
     private ZkClient zkClient;
-
-    @Autowired
-    private LoadBalanceAddress loadBalanceAddress;
 
     public RpcFactoryBean() {}
 
@@ -56,8 +54,8 @@ public class RpcFactoryBean<T> implements FactoryBean<T> {
         List<String> providerAddresses;
         try {
             providerAddresses = zooKeeper.getChildren(pathBuilder.toString(), true);
-            loadBalanceAddress.loadBalance(providerAddresses);
-            RpcClient rpcClient = new RpcClient(loadBalanceAddress.getHost(), loadBalanceAddress.getPort());
+            Invoker invoker = ExtensionLoader.getExtensionLoader(ILoadBalance.class).getDefaultExtension().loadBalance(providerAddresses);
+            RpcClient rpcClient = new RpcClient(invoker.getHost(), invoker.getPort());
             return (T) Proxy.newProxyInstance(rpcInterface.getClassLoader(), new Class[] { rpcInterface },
                     new RpcFactory<>(rpcInterface, rpcClient));
         } catch (Exception e) {
