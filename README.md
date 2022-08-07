@@ -1,7 +1,10 @@
 # NettyRpc
-基于Netty的RPC调用实现,将服务注册到Zookeeper上,从Zookeeper上获取服务调用地址
+RPC framework which based on Netty:
+* service interface will be registered into Zookeeper
+* Support SPI extension
+* Support auto load-balance between multiple service provider instances
 
-包括三个模块：
-1. api    依赖
-2. client 客户端
-3. server 服务端
+Modules:
+1. api(common dependency)
+2. client(service invoke wrapper)
+3. server(service provider)
