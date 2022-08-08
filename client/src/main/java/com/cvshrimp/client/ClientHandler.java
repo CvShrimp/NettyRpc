@@ -3,12 +3,17 @@ package com.cvshrimp.client;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Created by wukn on 2017/6/15.
  */
 @ChannelHandler.Sharable
 public class ClientHandler extends ChannelInboundHandlerAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(ClientHandler.class);
 
     private Object response;
 
@@ -25,7 +30,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println("channelRead:"+ msg);
+        log.info("channel read {}", msg);
         response = msg;
         ctx.close();
     }

@@ -1,5 +1,7 @@
 server:
     port: 8081
+rpc:
+    scanPath: com.cvshrimp.api
 registry:
     address: 127.0.0.1
     port: 2181

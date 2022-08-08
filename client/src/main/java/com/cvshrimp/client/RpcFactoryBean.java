@@ -5,6 +5,8 @@ import com.cvshrimp.spi.api.ILoadBalance;
 import com.cvshrimp.spi.impl.LoadBalanceAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.ZooKeeper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,8 +18,9 @@ import java.util.List;
  *
  * @author wkn
  */
-@Slf4j
 public class RpcFactoryBean<T> implements FactoryBean<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(RpcFactoryBean.class);
 
     private Class<T> rpcInterface;
 

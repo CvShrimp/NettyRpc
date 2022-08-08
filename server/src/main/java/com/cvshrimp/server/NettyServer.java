@@ -14,6 +14,8 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +32,10 @@ import java.util.Map;
  *
  * @author wkn
  */
-@Slf4j
 @Component
 public class NettyServer implements ApplicationContextAware, InitializingBean {
+
+    private static final Logger log = LoggerFactory.getLogger(NettyServer.class);
 
     @Value("${export.port}")
     private int port;
@@ -43,7 +46,7 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
     private ServiceRegistry serviceRegistry;
 
     /**
-     * 设置ApplicationContext，先于InitializingBean的afterPropertiesSet被调用
+     * Set ApplicationContext, will be executed before the InitializingBean.afterPropertiesSet()
      * @param applicationContext
      * @throws BeansException
      */
@@ -58,7 +61,7 @@ public class NettyServer implements ApplicationContextAware, InitializingBean {
                 String interfaceName = inter.getName();
                 serviceMap.put(interfaceName, serviceBean);
                 serviceRegistry.registerService(inter, "127.0.0.1:" + port);
-                // 注册服务成功
+                // register the service successful
                 log.info("Register service successful: {}", interfaceName);
             }
         }

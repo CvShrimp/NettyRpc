@@ -1,17 +1,16 @@
 package com.cvshrimp.server;
 
 import com.cvshrimp.client.ZkClient;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zookeeper.*;
-
-import static org.apache.zookeeper.Watcher.Event.KeeperState;
-
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by CvShrimp on 2019/11/4.
@@ -22,6 +21,8 @@ import java.util.concurrent.CountDownLatch;
 public class ServiceRegistry {
 
 	private static final String ZK_REGISTER_PATH = "/rpc";
+
+	private static Logger log = LoggerFactory.getLogger(ServiceRegistry.class);
 
 	@Autowired
 	private ZkClient zkClient;
@@ -34,7 +35,7 @@ public class ServiceRegistry {
 			createIfNotExisted(zooKeeper, ZK_REGISTER_PATH + "/" + interfaceName + "/providers", null);
 			createIfNotExisted(zooKeeper, ZK_REGISTER_PATH + "/" + interfaceName + "/providers/" + data, null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(String.format("Failed to register the service %s", interfaceName), e);
 		}
 	}
 
@@ -43,34 +44,34 @@ public class ServiceRegistry {
 			ZooKeeper zooKeeper = zkClient.getInstance();
 			addRootNode(zooKeeper);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Failed to register the root node", e);
 		}
 	}
 
 	private void addRootNode(ZooKeeper zooKeeper) {
 		try {
 			Stat stat = zooKeeper.exists(ZK_REGISTER_PATH, false);
-			// 不是null,则说明存在
+			// if it is not null, it should be existed. skip to handle
 			if(stat == null) {
 				zooKeeper.create(ZK_REGISTER_PATH, null, ZooDefs.Ids.OPEN_ACL_UNSAFE,
 						CreateMode.PERSISTENT);
 			}
 		} catch (KeeperException e) {
-			e.printStackTrace();
+			log.error("Failed to add the root node", e);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("Failed to add the root node", e);
 		}
 	}
 
 	private void createIfNotExisted(ZooKeeper zooKeeper, String path, String data) {
 		try {
 			Stat stat = zooKeeper.exists(path, false);
-			// 不是null,则说明存在
+			// if it is not null, it should be existed. skip to handle
 			if(stat == null) {
 				zooKeeper.create(path, data != null ? data.getBytes() : null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(String.format("Failed to add the path %s", path), e);
 		}
 	}
 }
